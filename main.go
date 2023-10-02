@@ -3,61 +3,37 @@ package main
 import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"goEthTestTask/crypto"
+	"goEthTestTask/walletManager"
 	"log"
 	"os"
+)
 
-	"github.com/ethereum/go-ethereum/crypto"
+const (
+	keystorePath     = "./keystore"         // Путь к директории с keystore
+	passwordHashFile = "./passwordHashFile" // Путь к файлу с хешем пароля
+	aesKey           = "passphrasewhichneedstobe32bytes!"
 )
 
 func main() {
-	files, err := os.ReadDir("./keystore")
+	files, err := os.ReadDir(keystorePath)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Создаем новый Keystore
-	ks := keystore.NewKeyStore("./keystore", keystore.StandardScryptN, keystore.StandardScryptP)
+	cipherer := crypto.NewCipherer(aesKey)
+	keyStore := keystore.NewKeyStore(keystorePath, keystore.StandardScryptN, keystore.StandardScryptP)
 
 	if len(files) == 0 {
-
-		// Генерируем новый приватный ключ
-		privateKey, err := crypto.GenerateKey()
+		wallet, err := walletManager.CreateWallet(keyStore, passwordHashFile, cipherer)
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		var password string
-		fmt.Print("Придумайте пароль: ")
-		_, err = fmt.Scanf("%s", &password)
-		if err != nil {
-			return
-		}
-
-		// Создаем новый аккаунт
-		account, err := ks.ImportECDSA(privateKey, password)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// Получаем адрес созданного аккаунта
-		address := account.Address.Hex()
-
-		// Выводим информацию о созданном кошельке
-		fmt.Println("Адрес кошелька:", address)
+		fmt.Println(wallet.Account.Address.String())
 	} else {
-		address := ks.Accounts()[0]
-
-		var password string
-		fmt.Print("Введите пароль от адресса " + address.Address.String() + ": ")
-		_, err = fmt.Scanf("%s", &password)
-		if err != nil {
-			return
-		}
-
-		prkey, err := ks.Export(address, password, password)
+		wallet, err := walletManager.WalletLogin(keyStore, passwordHashFile, cipherer)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(string(prkey))
+		fmt.Println(wallet.Account.Address.String())
 	}
 }
