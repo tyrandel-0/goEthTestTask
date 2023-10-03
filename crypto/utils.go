@@ -16,7 +16,6 @@ func Sha256Hash(inputString string) string {
 }
 
 func encryptAESBlock(data []byte, key []byte) ([]byte, error) {
-
 	cipher, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -41,19 +40,19 @@ func decryptAESBlock(encryptedData []byte, key []byte) ([]byte, error) {
 	return out, nil
 }
 
-func splitDataToBlocks(text []byte, blockSize uint) [][]byte {
+func splitDataToBlocks(data []byte, blockSize uint) [][]byte {
 	bs := int(blockSize)
-	numBlocks := (len(text) + bs - 1) / bs
+	numBlocks := (len(data) + bs - 1) / bs
 	blocks := make([][]byte, numBlocks)
 
 	for i := 0; i < numBlocks; i++ {
 		start := i * bs
 		end := (i + 1) * bs
-		if end > len(text) {
-			end = len(text)
+		if end > len(data) {
+			end = len(data)
 		}
-		block := make([]byte, bs) // Создаем блок нулей длиной blockSize
-		copy(block, text[start:end])
+		block := make([]byte, bs)
+		copy(block, data[start:end])
 		blocks[i] = block
 	}
 

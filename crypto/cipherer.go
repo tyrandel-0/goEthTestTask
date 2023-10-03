@@ -8,6 +8,7 @@ type Cipherer struct {
 	key []byte
 }
 
+// NewCipherer returns new Cipherer
 func NewCipherer(key string) Cipherer {
 	return Cipherer{
 		key: []byte(key),
